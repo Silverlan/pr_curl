@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <string>
-#include <pragma_module.hpp>
+#include <pragma/pragma_module.hpp>
 
 #pragma comment(lib,"libcurl_imp.lib")
 

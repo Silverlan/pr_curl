@@ -1,6 +1,6 @@
 #include "curl_handler.hpp"
 #include <curl/curl.h>
-#include <pragma_module.hpp>
+#include <pragma/pragma_module.hpp>
 
 CurlHandler::CurlHandler()
 {}
