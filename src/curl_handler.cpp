@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <pragma/pragma_module.hpp>
 
+#pragma optimize("",off)
 CurlHandler::CurlHandler()
 {}
 
@@ -299,3 +300,4 @@ extern "C" {
 	PRAGMA_EXPORT std::string mcd_code_to_string(int32_t code) {return curl_easy_strerror(static_cast<CURLcode>(code));}
 	PRAGMA_EXPORT bool mcd_is_error_code(int32_t code) {return code != CURLE_OK;}
 };
+#pragma optimize("",on)

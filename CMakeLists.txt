@@ -8,8 +8,14 @@ project(${PROJ_NAME} CXX)
 
 # set(PRECOMPILED_HEADER "stdafx")
 
-link_external_library(iclient)
+add_external_library(luajit)
+if(WIN32)
+	add_external_library(lua)
+endif()
+
 link_external_library(curl)
+
+add_include_dir(glm)
 
 link_generic_module_libraries()
 register_pragma_module(${PROJ_NAME})

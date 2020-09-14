@@ -19,6 +19,7 @@ PRAGMA_EXPORT bool wv_curl_download_file(const std::string &url,size_t(*fData)(v
 	if(res != CURLE_OK)
 		err = curl_easy_strerror(res);
 	curl_easy_cleanup(curl);
+	return true;
 }
 
 };
