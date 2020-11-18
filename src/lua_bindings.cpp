@@ -47,7 +47,10 @@ CurlRequest::CurlRequest(const std::string &url,const std::unordered_map<std::st
 		});
 		m_curlHandler->StartDownload();
 		while(complete == false && IsCancelled() == false)
+		{
 			UpdateProgress(progress);
+			std::this_thread::sleep_for(std::chrono::milliseconds{250}); // TODO: Use a condition variable instead
+		}
 		if(IsCancelled())
 		{
 			m_curlHandler->CancelDownload();
