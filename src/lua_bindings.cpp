@@ -11,8 +11,6 @@
 #include <pragma/lua/libraries/lfile.h>
 #include <sharedutils/util_parallel_job.hpp>
 
-extern DLLENGINE Engine *engine;
-
 #pragma optimize("",off)
 class CurlRequest
 	: public util::ParallelWorker<const std::string&>
