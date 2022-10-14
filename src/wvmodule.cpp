@@ -3,7 +3,7 @@
 #include <string>
 #include <pragma/pragma_module.hpp>
 
-#pragma comment(lib,"libcurl_imp.lib")
+
 
 extern "C" {
 
