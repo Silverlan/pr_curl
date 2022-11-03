@@ -1,6 +1,7 @@
 #include "curl_handler.hpp"
 #include <curl/curl.h>
 #include <pragma/pragma_module.hpp>
+#include <cstring>
 
 #pragma optimize("",off)
 CurlHandler::CurlHandler()
