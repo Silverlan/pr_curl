@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-include("../CMakeShared.txt")
+include("./CMakeShared.txt")
 
 set(PROJ_NAME pr_curl)
 
