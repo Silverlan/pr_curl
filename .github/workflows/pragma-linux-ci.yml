@@ -27,40 +27,7 @@ jobs:
             generators: "Unix Makefiles"
             build_dir: 'build'
     steps:
-      - uses: actions/checkout@v2
+      - name: Build Module
+        uses: Silverlan/pragma/github_actions/build_generic_module@master
         with:
-          submodules: true
-          
-      - name: Setup Pragma Module
-        id: pragma-cmake-defs
-        uses: Silverlan/common_actions/setup_pragma_module@main
-        with:
-          cc_version: ${{ matrix.cc }}
-          cxx_version: ${{ matrix.cxx }}
-          
-      - name: Build
-        shell: bash
-        run: |
-          cmake -G "Unix Makefiles" \
-            ${{ steps.pragma-cmake-defs.outputs.cmake_defs }} \
-            -DDEPENDENCY_CURL_INCLUDE="pragma/modules/pr_curl/third_party_libs/curl/include/"
-          cmake --build ./ --verbose --target pr_curl
-
-      - name: Create Release Files
-        shell: bash
-        run: |
-          mkdir release
-          mkdir release/modules
-          mkdir release/modules/curl
-          rsync --mkpath ./libpr_curl.so release/modules/curl/
-          rsync --mkpath ./third_party_libs/curl/lib/libcurl.so release/modules/curl/
-          
-      - name: Release Binaries
-        uses: Silverlan/common_actions/release_nightly_binaries@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit: ${{ github.ref_name }}
-          
-      - name: Handle Error
-        uses: Silverlan/common_actions/action_handle_error@main
-        if: failure()
+          module: 'pr_curl'

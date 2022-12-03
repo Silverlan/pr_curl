@@ -30,6 +30,7 @@ set(DEPENDENCY_CURL_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/curl/incl
 link_generic_module_libraries()
 register_pragma_module(${PROJ_NAME})
 
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "Curl SSH2" FORCE)
 add_subdirectory(third_party_libs/curl)
 
 set_target_properties(curl PROPERTIES FOLDER third_party_libs/curl)
