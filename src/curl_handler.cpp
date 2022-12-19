@@ -138,6 +138,8 @@ void CurlHandler::StartDownload()
 				}
 				m_resourceMutex.unlock();
 			}
+			if(count == 0)
+				break;
 		}
 
 		m_resourceMutex.lock();
@@ -212,7 +214,8 @@ void CurlHandler::InitializeCurl(void *curl,Request *request)
 
 	curl_easy_setopt(curl,CURLOPT_HEADERFUNCTION,CurlHandler::ReceiveHeader);
 	curl_easy_setopt(curl,CURLOPT_HEADERDATA,request);
-
+	
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,CurlHandler::WriteData);
 	curl_easy_setopt(curl,CURLOPT_WRITEDATA,request);
 
@@ -226,11 +229,12 @@ void CurlHandler::InitializeCurl(void *curl,Request *request)
 	}
 }
 
-void CurlHandler::AddResource(const std::string &url,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData,const std::function<void(int32_t)> &onComplete)
+void CurlHandler::AddResource(
+	const std::string &url,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData,
+	const std::function<void(int64_t,int64_t,int64_t,int64_t)> &progressCallback,const std::function<void(int32_t)> &onComplete
+)
 {
-	AddRequest(url,callback,std::bind(onComplete,std::placeholders::_1),[](int64_t dltotal,int64_t dlnow,int64_t ultotal,int64_t ulnow) {
-		
-	},[userData](Request *pReq,void *multiCurl) {
+	AddRequest(url,callback,std::bind(onComplete,std::placeholders::_1),progressCallback,[userData](Request *pReq,void *multiCurl) {
 		pReq->userData = userData;
 		auto *curl = curl_easy_init();
 		if(curl != nullptr)
@@ -292,7 +296,13 @@ void CurlHandler::AddRequest(
 extern "C" {
 	PRAGMA_EXPORT void *mcd_create() {return new CurlHandler();}
 	PRAGMA_EXPORT void mcd_release(void *cd) {delete static_cast<CurlHandler*>(cd);}
-	PRAGMA_EXPORT void mcd_add_resource(void *cd,const std::string &fname,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData,const std::function<void(int32_t)> &onComplete) {static_cast<CurlHandler*>(cd)->AddResource(fname,callback,userData,onComplete);}
+	PRAGMA_EXPORT void mcd_add_resource(
+		void *cd,const std::string &fname,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData,
+		const std::function<void(int64_t,int64_t,int64_t,int64_t)> &progressCallback,const std::function<void(int32_t)> &onComplete
+	)
+	{
+		static_cast<CurlHandler*>(cd)->AddResource(fname,callback,userData,progressCallback,onComplete);
+	}
 	PRAGMA_EXPORT void mcd_start_download(void *cd) {static_cast<CurlHandler*>(cd)->StartDownload();}
 	PRAGMA_EXPORT void mcd_cancel_download(void *cd) {static_cast<CurlHandler*>(cd)->CancelDownload();}
 	PRAGMA_EXPORT bool mcd_is_complete(void *cd) {return static_cast<CurlHandler*>(cd)->IsComplete();}
