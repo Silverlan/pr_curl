@@ -28,7 +28,11 @@ public:
 	};
 	CurlHandler();
 	~CurlHandler();
-	void AddResource(const std::string &fname,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData=nullptr,const std::function<void(int32_t)> &onComplete=nullptr);
+	void AddResource(
+		const std::string &fname,const std::function<size_t(void*,size_t,size_t)> &callback,const std::shared_ptr<void> &userData=nullptr,
+		const std::function<void(int64_t,int64_t,int64_t,int64_t)> &progressCallback=nullptr,
+		const std::function<void(int32_t)> &onComplete=nullptr
+	);
 	void AddRequest(
 		const std::string &url,
 		const std::unordered_map<std::string,std::string> &postValues,
