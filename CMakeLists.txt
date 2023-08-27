@@ -22,6 +22,9 @@ if(WIN32)
 	add_external_library(lua)
 endif()
 
+
+
+
 link_external_library(curl)
 
 add_include_dir(glm)
