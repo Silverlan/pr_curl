@@ -22,6 +22,9 @@ if(WIN32)
 	add_external_library(lua)
 endif()
 
+
+
+
 link_external_library(curl)
 
 add_include_dir(glm)
@@ -30,15 +33,16 @@ set(DEPENDENCY_CURL_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/curl/incl
 link_generic_module_libraries()
 register_pragma_module(${PROJ_NAME})
 
-set(CURL_ZLIB OFF CACHE BOOL "Curl ZLib" FORCE)
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "Curl SSH2" FORCE)
 set(CURL_USE_LIBSSH OFF CACHE BOOL "Curl SSH" FORCE)
+set(CURL_ZLIB OFF CACHE BOOL "Curl ZLib" FORCE)
+
+
 if(WIN32)
 	set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental" FORCE)
 	set(CMAKE_USE_WINSSL ON CACHE BOOL "enable Windows native SSL/TLS" FORCE)
 endif()
-set(CMAKE_DISABLE_FIND_PACKAGE_LibSSH2 ON CACHE BOOL "Curl SSH2" FORCE)
 add_subdirectory(third_party_libs/curl)
-unset(CMAKE_DISABLE_FIND_PACKAGE_LibSSH2 CACHE)
 
 set_target_properties(curl PROPERTIES FOLDER third_party_libs/curl)
 set_target_properties(libcurl PROPERTIES FOLDER third_party_libs/curl)
