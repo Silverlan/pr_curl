@@ -45,6 +45,6 @@ endif()
 add_subdirectory(third_party_libs/curl)
 
 set_target_properties(curl PROPERTIES FOLDER third_party_libs/curl)
-set_target_properties(libcurl PROPERTIES FOLDER third_party_libs/curl)
+set_target_properties(libcurl_shared PROPERTIES FOLDER third_party_libs/curl)
 
 add_dependencies(pr_curl libcurl)
