@@ -44,7 +44,8 @@ set(CURL_ZLIB OFF CACHE BOOL "Curl ZLib" FORCE)
 
 if(WIN32)
 	set(CURL_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental" FORCE)
-	set(CURL_USE_WINSSL ON CACHE BOOL "enable Windows native SSL/TLS" FORCE) # Obsolete?
+	set(CURL_USE_WINSSL OFF CACHE BOOL "enable Windows native SSL/TLS" FORCE) # Obsolete?
+	set(CURL_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS" FORCE)
 endif()
 if(WIN32)
 	set(CMAKE_DISABLE_FIND_PACKAGE_LibSSH2 ON CACHE BOOL "Curl SSH2" FORCE)
