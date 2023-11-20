@@ -151,13 +151,14 @@ void CurlHandler::CancelDownload() { m_bCancel = true; }
 bool CurlHandler::IsComplete() const { return m_bComplete; }
 
 void CurlHandler::AddRequest(const std::string &url, const std::function<size_t(void *, size_t, size_t)> &writeCallback, const std::function<void(int32_t, const std::string &)> &onComplete, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback,
-  const std::function<void(Request *, void *)> &fRequest)
+  const std::function<void(Request *, void *)> &fRequest, std::optional<std::chrono::milliseconds> timeout)
 {
 	m_requestMutex.lock();
 	m_queuedRequests.push(std::shared_ptr<Request>(new Request()));
 	auto &req = m_queuedRequests.back();
 	req->url = url;
 	req->curl = this;
+	req->timeoutMs = timeout;
 	req->writeCallback = writeCallback;
 	req->completeCallback = [onComplete](Request &request, int32_t code) {
 		if(onComplete == nullptr)
@@ -200,6 +201,11 @@ void CurlHandler::InitializeCurl(void *curl, Request *request)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, request);
 
 	curl_easy_setopt(curl, CURLOPT_URL, request->url.c_str());
+
+	if(request->timeoutMs.has_value()) {
+		auto ms = static_cast<long>(request->timeoutMs->count());
+		curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, ms);
+	}
 
 	if(request->progressCallback != nullptr) {
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
@@ -282,7 +288,8 @@ void CurlHandler::AddRequest(const std::string &url, const RequestData &requestD
 			  curl_multi_add_handle(multiCurl, curl);
 			  pReq->handle = std::shared_ptr<CURL> {curl, [](CURL *curl) { curl_easy_cleanup(curl); }};
 		  }
-	  });
+	  },
+	  requestData.timeoutMs ? std::chrono::milliseconds {*requestData.timeoutMs} : std::optional<std::chrono::milliseconds> {});
 }
 
 extern "C" {
@@ -301,7 +308,8 @@ PRAGMA_EXPORT void mcd_send_request(void *cd, const std::string &url, const std:
 {
 	RequestData requestData {};
 	requestData.SetPostKeyValues(post);
-	requestData.onComplete = [onComplete](int32_t c, const std::vector<uint8_t> &r) { std::string str;
+	requestData.onComplete = [onComplete](int32_t c, const std::vector<uint8_t> &r) {
+		std::string str;
 		str.resize(r.size());
 		memcpy(str.data(), r.data(), r.size());
 		onComplete(c, str);

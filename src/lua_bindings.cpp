@@ -10,6 +10,7 @@
 #include <pragma/lua/ldefinitions.h>
 #include <pragma/lua/libraries/lfile.h>
 #include <pragma/lua/converters/vector_converter_t.hpp>
+#include <pragma/lua/converters/optional_converter_t.hpp>
 #include <sharedutils/util_parallel_job.hpp>
 #include <sharedutils/datastream.h>
 
@@ -67,6 +68,30 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 }
 
 #include <iostream>
+
+static void add_request(lua_State *l, CurlHandler &curlHandler, const std::string &url, std::optional<size_t> timeout)
+{
+	std::unordered_map<std::string, std::string> postValues {};
+	std::function<void(int32_t, const std::vector<uint8_t> &)> onComplete = [](int32_t code, const std::vector<uint8_t> &result) mutable {
+		std::string strResult;
+		strResult.resize(result.size());
+		memcpy(strResult.data(), result.data(), result.size());
+		std::cout << "OnComplete: " << code << "," << strResult << std::endl;
+		//lOnComplete(code,result);
+	};
+	std::function<void(int64_t, int64_t, int64_t, int64_t)> progressCallback = [](int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t ulnow) mutable {
+		std::cout << "Progress: " << dltotal << "," << dlnow << "," << ultotal << "," << ulnow << std::endl;
+		//lProgressCallback(dltotal,dlnow,ultotal,ulnow);
+	};
+	curlHandler.SetErrorHandler([](CurlHandler::ResultCode result) { std::cout << "Result: " << umath::to_integral(result) << std::endl; });
+	RequestData requestData {};
+	requestData.SetPostKeyValues(postValues);
+	requestData.onComplete = std::move(onComplete);
+	requestData.progressCallback = std::move(progressCallback);
+	requestData.timeoutMs = timeout;
+	curlHandler.AddRequest(url, requestData);
+}
+
 static void register_lua_library(Lua::Interface &l)
 {
 	/*{"create_instance",static_cast<int32_t(*)(lua_State*)>([](lua_State *l) -> int32_t {
@@ -85,6 +110,7 @@ static void register_lua_library(Lua::Interface &l)
 	classDefRequestData.def("SetPostKeyValues", &RequestData::SetPostKeyValues);
 	classDefRequestData.def_readwrite("postData", &RequestData::postData);
 	classDefRequestData.def_readwrite("headers", &RequestData::headers);
+	classDefRequestData.def_readwrite("timeoutMs", &RequestData::timeoutMs);
 	modCurl[classDefRequestData];
 
 	auto classDefCurl = luabind::class_<CurlHandler>("Instance");
@@ -113,26 +139,9 @@ static void register_lua_library(Lua::Interface &l)
 		}
 	));
 #endif
-	classDefCurl.def("AddRequest", static_cast<void (*)(lua_State *, CurlHandler &, const std::string &)>([](lua_State *l, CurlHandler &curlHandler, const std::string &url) {
-		std::unordered_map<std::string, std::string> postValues {};
-		std::function<void(int32_t, const std::vector<uint8_t> &)> onComplete = [](int32_t code, const std::vector<uint8_t> &result) mutable {
-			std::string strResult;
-			strResult.resize(result.size());
-			memcpy(strResult.data(), result.data(), result.size());
-			std::cout << "OnComplete: " << code << "," << strResult << std::endl;
-			//lOnComplete(code,result);
-		};
-		std::function<void(int64_t, int64_t, int64_t, int64_t)> progressCallback = [](int64_t dltotal, int64_t dlnow, int64_t ultotal, int64_t ulnow) mutable {
-			std::cout << "Progress: " << dltotal << "," << dlnow << "," << ultotal << "," << ulnow << std::endl;
-			//lProgressCallback(dltotal,dlnow,ultotal,ulnow);
-		};
-		curlHandler.SetErrorHandler([](CurlHandler::ResultCode result) { std::cout << "Result: " << umath::to_integral(result) << std::endl; });
-		RequestData requestData {};
-		requestData.SetPostKeyValues(postValues);
-		requestData.onComplete = std::move(onComplete);
-		requestData.progressCallback = std::move(progressCallback);
-		curlHandler.AddRequest(url, requestData);
-	}));
+	classDefCurl.def("AddRequest", &add_request);
+	classDefCurl.def(
+	  "AddRequest", +[](lua_State *l, CurlHandler &curlHandler, const std::string &url) { add_request(l, curlHandler, url, {}); });
 	classDefCurl.def("StartDownload", static_cast<void (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) { curlHandler.StartDownload(); }));
 	classDefCurl.def("CancelDownload", static_cast<void (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) { curlHandler.CancelDownload(); }));
 	classDefCurl.def("CancelDownload", static_cast<bool (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) -> bool { return curlHandler.IsComplete(); }));
