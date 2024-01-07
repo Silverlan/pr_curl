@@ -53,6 +53,7 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 		}
 		if(IsCancelled()) {
 			m_curlHandler->CancelDownload();
+			m_curlHandler = nullptr;
 			SetStatus(util::JobStatus::Cancelled);
 		}
 		else {
