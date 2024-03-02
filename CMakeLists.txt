@@ -12,9 +12,9 @@ set(DEPENDENCY_CURL_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/curl/incl
 
 
 if(WIN32)
-    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} libcurl_imp)
+    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} libcurl_imp$<$<CONFIG:Debug>:-d>)
 else()
-    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} curl)
+    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} curl$<$<CONFIG:Debug>:-d>)
 endif()
 
 add_external_library(luajit)
