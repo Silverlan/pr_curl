@@ -317,6 +317,6 @@ PRAGMA_EXPORT void mcd_send_request(void *cd, const std::string &url, const std:
 	requestData.progressCallback = progressCallback;
 	static_cast<CurlHandler *>(cd)->AddRequest(url, requestData);
 }
-PRAGMA_EXPORT std::string mcd_code_to_string(int32_t code) { return curl_easy_strerror(static_cast<CURLcode>(code)); }
+PRAGMA_EXPORT void mcd_code_to_string(int32_t code, std::string &outString) { outString = curl_easy_strerror(static_cast<CURLcode>(code)); }
 PRAGMA_EXPORT bool mcd_is_error_code(int32_t code) { return code != CURLE_OK; }
 };
