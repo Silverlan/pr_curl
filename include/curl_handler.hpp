@@ -4,6 +4,7 @@
 #include <cinttypes>
 #include <string>
 #include <functional>
+#include <optional>
 #include <memory>
 #include <queue>
 #include <vector>
