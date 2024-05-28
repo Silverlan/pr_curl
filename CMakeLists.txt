@@ -1,50 +1,22 @@
-cmake_minimum_required(VERSION 3.12)
-
-include("./CMakeShared.txt")
+include(${CMAKE_SOURCE_DIR}/cmake/pr_common.cmake)
 
 set(PROJ_NAME pr_curl)
+pr_add_library(${PROJ_NAME} SHARED)
 
-project(${PROJ_NAME} CXX)
+pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
 
-# set(PRECOMPILED_HEADER "stdafx")
+pr_add_headers(${PROJ_NAME} "include/")
+pr_add_sources(${PROJ_NAME} "src/")
 
-set(DEPENDENCY_CURL_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/curl/include/curl/ CACHE PATH "Path to include directory.")
-
-
-if(WIN32)
-    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} libcurl_imp$<$<CONFIG:Debug>:-d>)
-else()
-    search_lib_recursive(DEPENDENCY_CURL_LIBRARY third_party_libs/curl/lib/${BINARY_PRAGMA_DIR} curl$<$<CONFIG:Debug>:-d>)
-endif()
-
-add_external_library(luajit)
-if(WIN32)
-	add_external_library(lua)
-endif()
-
-
-
-
-link_external_library(curl)
-
-add_include_dir(glm)
-set(DEPENDENCY_CURL_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/curl/include CACHE PATH "" FORCE)
-
-link_generic_module_libraries()
-register_pragma_module(${PROJ_NAME})
-
+# Curl
 set(CURL_USE_LIBSSH2 OFF CACHE BOOL "Curl SSH2" FORCE)
 set(CURL_USE_LIBSSH OFF CACHE BOOL "Curl SSH" FORCE)
 set(CURL_ZLIB OFF CACHE BOOL "Curl ZLib" FORCE)
-
-
 
 if(WIN32)
 	set(CURL_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental" FORCE)
 	set(CURL_USE_WINSSL OFF CACHE BOOL "enable Windows native SSL/TLS" FORCE) # Obsolete?
 	set(CURL_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS" FORCE)
-endif()
-if(WIN32)
 	set(CMAKE_DISABLE_FIND_PACKAGE_LibSSH2 ON CACHE BOOL "Curl SSH2" FORCE)
 endif()
 add_subdirectory(third_party_libs/curl)
@@ -52,4 +24,6 @@ add_subdirectory(third_party_libs/curl)
 set_target_properties(curl PROPERTIES FOLDER third_party_libs/curl)
 set_target_properties(libcurl_shared PROPERTIES FOLDER third_party_libs/curl)
 
-add_dependencies(pr_curl libcurl)
+pr_add_dependency(${PROJ_NAME} libcurl_shared TARGET)
+
+pr_finalize(${PROJ_NAME} FOLDER "third_party_libs/curl")
