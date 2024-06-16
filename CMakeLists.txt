@@ -21,9 +21,16 @@ if(WIN32)
 endif()
 add_subdirectory(third_party_libs/curl)
 
+set(IDE_FOLDER "modules/curl/")
+pr_set_target_folder(libcurl_object "${IDE_FOLDER}")
+pr_set_target_folder(libcurl_static "${IDE_FOLDER}")
+pr_set_target_folder(curl_uninstall "${IDE_FOLDER}")
+pr_set_target_folder(curltool "${IDE_FOLDER}")
+pr_set_target_folder(curlu "${IDE_FOLDER}")
+
 set_target_properties(curl PROPERTIES FOLDER third_party_libs/curl)
 set_target_properties(libcurl_shared PROPERTIES FOLDER third_party_libs/curl)
 
 pr_add_dependency(${PROJ_NAME} libcurl_shared TARGET)
 
-pr_finalize(${PROJ_NAME} FOLDER "third_party_libs/curl")
+pr_finalize(${PROJ_NAME} FOLDER "${IDE_FOLDER}")
