@@ -1,3 +1,0 @@
-pragma_install_create_directory(modules/curl)
-pragma_install_lib("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_curl/${PR_MODULE_INSTALL_SUBDIR}/${OS_LIB_BIN_PRE}pr_curl${OS_LIB_BIN_EXT}" "modules/curl/" OPTIONAL)
-pragma_install_lib("${CMAKE_CURRENT_BINARY_DIR}/modules/pr_curl/third_party_libs/curl/lib/${PR_MODULE_INSTALL_SUBDIR}/libcurl${OS_LIB_BIN_EXT}" "modules/curl/" OPTIONAL)
