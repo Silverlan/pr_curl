@@ -1,0 +1,6 @@
+{
+    "name": "Curl",
+    "module_name": "pr_curl",
+    "install_directory": "modules/curl/",
+    "release_directory": "modules/curl/"
+}
