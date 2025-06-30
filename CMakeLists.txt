@@ -19,7 +19,11 @@ if(WIN32)
 	set(CURL_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS" FORCE)
 	set(CMAKE_DISABLE_FIND_PACKAGE_LibSSH2 ON CACHE BOOL "Curl SSH2" FORCE)
 endif()
+# Make sure curl doesn't pick up zlib
+set(_old_zlib_found ${ZLIB_FOUND})
+set(ZLIB_FOUND FALSE)
 add_subdirectory(third_party_libs/curl)
+set(ZLIB_FOUND ${_old_zlib_found})
 
 set(IDE_FOLDER "modules/curl/")
 pr_set_target_folder(libcurl_object "${IDE_FOLDER}")
