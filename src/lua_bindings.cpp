@@ -4,12 +4,6 @@
 #include "curl_handler.hpp"
 #include <luainterface.hpp>
 #include <luasystem.h>
-#include <pragma/engine.h>
-#include <pragma/pragma_module.hpp>
-#include <pragma/lua/ldefinitions.h>
-#include <pragma/lua/libraries/lfile.h>
-#include <pragma/lua/converters/vector_converter_t.hpp>
-#include <pragma/lua/converters/optional_converter_t.hpp>
 #include <sharedutils/util_parallel_job.hpp>
 #include <sharedutils/datastream.h>
 
