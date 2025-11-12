@@ -1,16 +1,15 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include <stdio.h>
+module;
+
 #include <curl/curl.h>
-#include <string>
-#include <pragma/pragma_module.hpp>
 
-
+module pragma.modules.curl;
 
 extern "C" {
 
-PRAGMA_EXPORT bool wv_curl_download_file(const std::string &url,size_t(*fData)(void*,size_t,size_t,void*),void *userData,std::string &err)
+PR_EXPORT bool wv_curl_download_file(const std::string &url,size_t(*fData)(void*,size_t,size_t,void*),void *userData,std::string &err)
 {
 	auto *curl = curl_easy_init();
 	if(curl == nullptr)

@@ -5,8 +5,7 @@ pr_add_module(${PROJ_NAME} SHARED "modules/curl/")
 
 pr_add_dependency(${PROJ_NAME} ishared TARGET PUBLIC)
 
-pr_add_headers(${PROJ_NAME} "include/")
-pr_add_sources(${PROJ_NAME} "src/")
+pr_init_module(${PROJ_NAME})
 
 # Curl
 set(CURL_USE_LIBSSH2 OFF CACHE BOOL "Curl SSH2" FORCE)
