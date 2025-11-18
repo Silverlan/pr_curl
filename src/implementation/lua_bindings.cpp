@@ -1,25 +1,17 @@
 // SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include "curl_handler.hpp"
-#include <luainterface.hpp>
-#include <luasystem.h>
-#include <pragma/engine.h>
-#include <pragma/pragma_module.hpp>
-#include <pragma/lua/ldefinitions.h>
-#include <pragma/lua/libraries/lfile.h>
-#include <pragma/lua/converters/vector_converter_t.hpp>
-#include <pragma/lua/converters/optional_converter_t.hpp>
-#include <sharedutils/util_parallel_job.hpp>
-#include <sharedutils/datastream.h>
+module pragma.modules.curl;
 
-class CurlRequest : public util::ParallelWorker<const DataStream &> {
+import pragma.lua;
+
+class CurlRequest : public util::ParallelWorker<const util::DataStream &> {
   public:
 	CurlRequest(const std::string &url, const RequestData &requestData);
 
-	virtual const DataStream &GetResult() override { return m_result; }
+	virtual const util::DataStream &GetResult() override { return m_result; }
   private:
-	DataStream m_result;
+	util::DataStream m_result;
 	std::shared_ptr<CurlHandler> m_curlHandler = nullptr;
 };
 
@@ -29,7 +21,7 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 	AddThread([this, url, requestData = std::move(requestData)]() mutable {
 		std::atomic<double> progress = 0.0;
 		int32_t resultCode = -1;
-		DataStream result;
+		util::DataStream result;
 		std::atomic<bool> complete = false;
 		m_curlHandler->SetErrorHandler([](CurlHandler::ResultCode resultCode) {
 			// TODO
@@ -67,9 +59,7 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 	});
 }
 
-#include <iostream>
-
-static void add_request(lua_State *l, CurlHandler &curlHandler, const std::string &url, std::optional<size_t> timeout)
+static void add_request(lua::State *l, CurlHandler &curlHandler, const std::string &url, std::optional<size_t> timeout)
 {
 	std::unordered_map<std::string, std::string> postValues {};
 	std::function<void(int32_t, const std::vector<uint8_t> &)> onComplete = [](int32_t code, const std::vector<uint8_t> &result) mutable {
@@ -94,19 +84,17 @@ static void add_request(lua_State *l, CurlHandler &curlHandler, const std::strin
 
 static void register_lua_library(Lua::Interface &l)
 {
-	/*{"create_instance",static_cast<int32_t(*)(lua_State*)>([](lua_State *l) -> int32_t {
+	/*{"create_instance",static_cast<int32_t(*)(lua::State*)>([](lua::State *l) -> int32_t {
 			auto curlHandler = std::make_shared<CurlHandler>();
 			Lua::Push(l,curlHandler);
 			return 1;
 		})},*/
 	auto &modCurl = l.RegisterLibrary("curl");
-	modCurl[luabind::def(
-	  "request", +[](const std::string &url, const RequestData &requestData) -> util::ParallelJob<const DataStream &> { return util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
+	modCurl[luabind::def("request", +[](const std::string &url, const RequestData &requestData) -> util::ParallelJob<const util::DataStream &> { return util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
 
 	auto classDefRequestData = luabind::class_<RequestData>("RequestData");
 	classDefRequestData.def(luabind::constructor<>());
-	classDefRequestData.def(
-	  "__tostring", +[]() -> std::string { return "RequestData"; });
+	classDefRequestData.def("__tostring", +[]() -> std::string { return "RequestData"; });
 	classDefRequestData.def("SetPostKeyValues", &RequestData::SetPostKeyValues);
 	classDefRequestData.def_readwrite("postData", &RequestData::postData);
 	classDefRequestData.def_readwrite("headers", &RequestData::headers);
@@ -115,8 +103,8 @@ static void register_lua_library(Lua::Interface &l)
 
 	auto classDefCurl = luabind::class_<CurlHandler>("Instance");
 #if 0
-	classDefCurl.def("AddRequest",static_cast<void(*)(lua_State*,CurlHandler&,const std::string&,luabind::table<>,luabind::function<void>,luabind::function<void>)>(
-		[](lua_State *l,CurlHandler &curlHandler,const std::string &url,luabind::table<> lPostValues,luabind::function<void> lOnComplete,luabind::function<void> lProgressCallback) {
+	classDefCurl.def("AddRequest",static_cast<void(*)(lua::State*,CurlHandler&,const std::string&,luabind::table<>,luabind::function<void>,luabind::function<void>)>(
+		[](lua::State *l,CurlHandler &curlHandler,const std::string &url,luabind::table<> lPostValues,luabind::function<void> lOnComplete,luabind::function<void> lProgressCallback) {
 			std::unordered_map<std::string,std::string> postValues {};
 			for(auto it=luabind::iterator{lPostValues},end=luabind::iterator{};it!=end;++it)
 			{
@@ -140,14 +128,13 @@ static void register_lua_library(Lua::Interface &l)
 	));
 #endif
 	classDefCurl.def("AddRequest", &add_request);
-	classDefCurl.def(
-	  "AddRequest", +[](lua_State *l, CurlHandler &curlHandler, const std::string &url) { add_request(l, curlHandler, url, {}); });
-	classDefCurl.def("StartDownload", static_cast<void (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) { curlHandler.StartDownload(); }));
-	classDefCurl.def("CancelDownload", static_cast<void (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) { curlHandler.CancelDownload(); }));
-	classDefCurl.def("CancelDownload", static_cast<bool (*)(lua_State *, CurlHandler &)>([](lua_State *l, CurlHandler &curlHandler) -> bool { return curlHandler.IsComplete(); }));
+	classDefCurl.def("AddRequest", +[](lua::State *l, CurlHandler &curlHandler, const std::string &url) { add_request(l, curlHandler, url, {}); });
+	classDefCurl.def("StartDownload", static_cast<void (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) { curlHandler.StartDownload(); }));
+	classDefCurl.def("CancelDownload", static_cast<void (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) { curlHandler.CancelDownload(); }));
+	classDefCurl.def("CancelDownload", static_cast<bool (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) -> bool { return curlHandler.IsComplete(); }));
 	modCurl[classDefCurl];
 }
 
 extern "C" {
-void PRAGMA_EXPORT pragma_initialize_lua(Lua::Interface &l) { register_lua_library(l); }
+void PR_EXPORT pragma_initialize_lua(Lua::Interface &l) { register_lua_library(l); }
 };

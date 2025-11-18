@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include "curl_handler.hpp"
+module;
+
 #include <curl/curl.h>
-#include <pragma/pragma_module.hpp>
-#include <cstring>
+
+module pragma.modules.curl;
 
 CurlHandler::CurlHandler() {}
 
@@ -296,18 +297,18 @@ void CurlHandler::AddRequest(const std::string &url, const RequestData &requestD
 }
 
 extern "C" {
-PRAGMA_EXPORT void *mcd_create() { return new CurlHandler(); }
-PRAGMA_EXPORT void mcd_release(void *cd) { delete static_cast<CurlHandler *>(cd); }
-PRAGMA_EXPORT void mcd_add_resource(void *cd, const std::string &fname, const std::function<size_t(void *, size_t, size_t)> &callback, const std::shared_ptr<void> &userData, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback,
+PR_EXPORT void *mcd_create() { return new CurlHandler(); }
+PR_EXPORT void mcd_release(void *cd) { delete static_cast<CurlHandler *>(cd); }
+PR_EXPORT void mcd_add_resource(void *cd, const std::string &fname, const std::function<size_t(void *, size_t, size_t)> &callback, const std::shared_ptr<void> &userData, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback,
   const std::function<void(int32_t)> &onComplete)
 {
 	static_cast<CurlHandler *>(cd)->AddResource(fname, callback, userData, progressCallback, onComplete);
 }
-PRAGMA_EXPORT void mcd_start_download(void *cd) { static_cast<CurlHandler *>(cd)->StartDownload(); }
-PRAGMA_EXPORT void mcd_cancel_download(void *cd) { static_cast<CurlHandler *>(cd)->CancelDownload(); }
-PRAGMA_EXPORT bool mcd_is_complete(void *cd) { return static_cast<CurlHandler *>(cd)->IsComplete(); }
-PRAGMA_EXPORT void mcd_set_error_handler(void *cd, const std::function<void(uint32_t)> &f) { static_cast<CurlHandler *>(cd)->SetErrorHandler(reinterpret_cast<const std::function<void(CurlHandler::ResultCode)> &>(f)); }
-PRAGMA_EXPORT void mcd_send_request(void *cd, const std::string &url, const std::unordered_map<std::string, std::string> &post, const std::function<void(int32_t, const std::string &)> &onComplete, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback)
+PR_EXPORT void mcd_start_download(void *cd) { static_cast<CurlHandler *>(cd)->StartDownload(); }
+PR_EXPORT void mcd_cancel_download(void *cd) { static_cast<CurlHandler *>(cd)->CancelDownload(); }
+PR_EXPORT bool mcd_is_complete(void *cd) { return static_cast<CurlHandler *>(cd)->IsComplete(); }
+PR_EXPORT void mcd_set_error_handler(void *cd, const std::function<void(uint32_t)> &f) { static_cast<CurlHandler *>(cd)->SetErrorHandler(reinterpret_cast<const std::function<void(CurlHandler::ResultCode)> &>(f)); }
+PR_EXPORT void mcd_send_request(void *cd, const std::string &url, const std::unordered_map<std::string, std::string> &post, const std::function<void(int32_t, const std::string &)> &onComplete, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback)
 {
 	RequestData requestData {};
 	requestData.SetPostKeyValues(post);
@@ -320,6 +321,6 @@ PRAGMA_EXPORT void mcd_send_request(void *cd, const std::string &url, const std:
 	requestData.progressCallback = progressCallback;
 	static_cast<CurlHandler *>(cd)->AddRequest(url, requestData);
 }
-PRAGMA_EXPORT void mcd_code_to_string(int32_t code, std::string &outString) { outString = curl_easy_strerror(static_cast<CURLcode>(code)); }
-PRAGMA_EXPORT bool mcd_is_error_code(int32_t code) { return code != CURLE_OK; }
+PR_EXPORT void mcd_code_to_string(int32_t code, std::string &outString) { outString = curl_easy_strerror(static_cast<CURLcode>(code)); }
+PR_EXPORT bool mcd_is_error_code(int32_t code) { return code != CURLE_OK; }
 };
