@@ -18,18 +18,18 @@ export {
 	};
 
 	class CurlHandler {
-	public:
+	  public:
 		enum class ResultCode : uint32_t { Ok = 0, BadHandle, BadEasyHandle, OutOfMemory, InternalError, BadSocket, UnknownOption, AddedAlready };
 		CurlHandler();
 		~CurlHandler();
 		void AddResource(const std::string &fname, const std::function<size_t(void *, size_t, size_t)> &callback, const std::shared_ptr<void> &userData = nullptr, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback = nullptr,
-		const std::function<void(int32_t)> &onComplete = nullptr);
+		  const std::function<void(int32_t)> &onComplete = nullptr);
 		void AddRequest(const std::string &url, const RequestData &requestData = {});
 		void StartDownload();
 		void CancelDownload();
 		bool IsComplete() const;
 		void SetErrorHandler(const std::function<void(ResultCode)> &f);
-	private:
+	  private:
 		void *m_multiCurl = nullptr;
 
 		struct Request {
@@ -62,7 +62,7 @@ export {
 		uint32_t ProcessAllRequests();
 
 		void AddRequest(const std::string &url, const std::function<size_t(void *, size_t, size_t)> &writeCallback, const std::function<void(int32_t, const std::string &)> &onComplete, const std::function<void(int64_t, int64_t, int64_t, int64_t)> &progressCallback,
-		const std::function<void(Request *, void *)> &fRequest, std::optional<std::chrono::milliseconds> timeout = {});
+		  const std::function<void(Request *, void *)> &fRequest, std::optional<std::chrono::milliseconds> timeout = {});
 		static size_t ReceiveHeader(char *buffer, size_t size, size_t nitems, void *userdata);
 		static void InitializeCurl(void *curl, Request *request);
 		static size_t WriteData(void *ptr, size_t size, size_t nmemb, void *userData);

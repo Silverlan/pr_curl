@@ -90,13 +90,11 @@ static void register_lua_library(Lua::Interface &l)
 			return 1;
 		})},*/
 	auto &modCurl = l.RegisterLibrary("curl");
-	modCurl[luabind::def(
-	  "request", +[](const std::string &url, const RequestData &requestData) -> util::ParallelJob<const util::DataStream &> { return util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
+	modCurl[luabind::def("request", +[](const std::string &url, const RequestData &requestData) -> util::ParallelJob<const util::DataStream &> { return util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
 
 	auto classDefRequestData = luabind::class_<RequestData>("RequestData");
 	classDefRequestData.def(luabind::constructor<>());
-	classDefRequestData.def(
-	  "__tostring", +[]() -> std::string { return "RequestData"; });
+	classDefRequestData.def("__tostring", +[]() -> std::string { return "RequestData"; });
 	classDefRequestData.def("SetPostKeyValues", &RequestData::SetPostKeyValues);
 	classDefRequestData.def_readwrite("postData", &RequestData::postData);
 	classDefRequestData.def_readwrite("headers", &RequestData::headers);
@@ -130,8 +128,7 @@ static void register_lua_library(Lua::Interface &l)
 	));
 #endif
 	classDefCurl.def("AddRequest", &add_request);
-	classDefCurl.def(
-	  "AddRequest", +[](lua::State *l, CurlHandler &curlHandler, const std::string &url) { add_request(l, curlHandler, url, {}); });
+	classDefCurl.def("AddRequest", +[](lua::State *l, CurlHandler &curlHandler, const std::string &url) { add_request(l, curlHandler, url, {}); });
 	classDefCurl.def("StartDownload", static_cast<void (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) { curlHandler.StartDownload(); }));
 	classDefCurl.def("CancelDownload", static_cast<void (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) { curlHandler.CancelDownload(); }));
 	classDefCurl.def("CancelDownload", static_cast<bool (*)(lua::State *, CurlHandler &)>([](lua::State *l, CurlHandler &curlHandler) -> bool { return curlHandler.IsComplete(); }));
