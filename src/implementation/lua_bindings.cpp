@@ -5,13 +5,13 @@ module pragma.modules.curl;
 
 import pragma.lua;
 
-class CurlRequest : public util::ParallelWorker<const util::DataStream &> {
+class CurlRequest : public pragma::util::ParallelWorker<const pragma::util::DataStream &> {
   public:
 	CurlRequest(const std::string &url, const RequestData &requestData);
 
-	virtual const util::DataStream &GetResult() override { return m_result; }
+	virtual const pragma::util::DataStream &GetResult() override { return m_result; }
   private:
-	util::DataStream m_result;
+	pragma::util::DataStream m_result;
 	std::shared_ptr<CurlHandler> m_curlHandler = nullptr;
 };
 
@@ -21,7 +21,7 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 	AddThread([this, url, requestData = std::move(requestData)]() mutable {
 		std::atomic<double> progress = 0.0;
 		int32_t resultCode = -1;
-		util::DataStream result;
+		pragma::util::DataStream result;
 		std::atomic<bool> complete = false;
 		m_curlHandler->SetErrorHandler([](CurlHandler::ResultCode resultCode) {
 			// TODO
@@ -45,14 +45,14 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 		if(IsCancelled()) {
 			m_curlHandler->CancelDownload();
 			m_curlHandler = nullptr;
-			SetStatus(util::JobStatus::Cancelled);
+			SetStatus(pragma::util::JobStatus::Cancelled);
 		}
 		else {
 			if(resultCode != 0)
-				SetStatus(util::JobStatus::Failed, "Result code " + std::to_string(resultCode));
+				SetStatus(pragma::util::JobStatus::Failed, "Result code " + std::to_string(resultCode));
 			else {
 				UpdateProgress(1.f);
-				SetStatus(util::JobStatus::Successful);
+				SetStatus(pragma::util::JobStatus::Successful);
 				m_result = result;
 			}
 		}
@@ -73,7 +73,7 @@ static void add_request(lua::State *l, CurlHandler &curlHandler, const std::stri
 		std::cout << "Progress: " << dltotal << "," << dlnow << "," << ultotal << "," << ulnow << std::endl;
 		//lProgressCallback(dltotal,dlnow,ultotal,ulnow);
 	};
-	curlHandler.SetErrorHandler([](CurlHandler::ResultCode result) { std::cout << "Result: " << umath::to_integral(result) << std::endl; });
+	curlHandler.SetErrorHandler([](CurlHandler::ResultCode result) { std::cout << "Result: " << pragma::math::to_integral(result) << std::endl; });
 	RequestData requestData {};
 	requestData.SetPostKeyValues(postValues);
 	requestData.onComplete = std::move(onComplete);
@@ -90,7 +90,7 @@ static void register_lua_library(Lua::Interface &l)
 			return 1;
 		})},*/
 	auto &modCurl = l.RegisterLibrary("curl");
-	modCurl[luabind::def("request", +[](const std::string &url, const RequestData &requestData) -> util::ParallelJob<const util::DataStream &> { return util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
+	modCurl[luabind::def("request", +[](const std::string &url, const RequestData &requestData) -> pragma::util::ParallelJob<const pragma::util::DataStream &> { return pragma::util::create_parallel_job<CurlRequest>(url, std::move(requestData)); })];
 
 	auto classDefRequestData = luabind::class_<RequestData>("RequestData");
 	classDefRequestData.def(luabind::constructor<>());
@@ -121,7 +121,7 @@ static void register_lua_library(Lua::Interface &l)
 				//lProgressCallback(dltotal,dlnow,ultotal,ulnow);
 			};
 			curlHandler.SetErrorHandler([](CurlHandler::ResultCode result) {
-				std::cout<<"Result: "<<umath::to_integral(result)<<std::endl;
+				std::cout<<"Result: "<<pragma::math::to_integral(result)<<std::endl;
 			});
 			curlHandler.AddRequest(url,postValues,onComplete,progressCallback);
 		}
