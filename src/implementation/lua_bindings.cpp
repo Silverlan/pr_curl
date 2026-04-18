@@ -49,7 +49,7 @@ CurlRequest::CurlRequest(const std::string &url, const RequestData &requestData)
 		}
 		else {
 			if(resultCode != 0)
-				SetStatus(pragma::util::JobStatus::Failed, "Result code " + std::to_string(resultCode));
+				SetStatus(pragma::util::JobStatus::Failed, "Result code " + pragma::util::to_string(resultCode));
 			else {
 				UpdateProgress(1.f);
 				SetStatus(pragma::util::JobStatus::Successful);
